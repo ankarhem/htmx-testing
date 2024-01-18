@@ -5,6 +5,7 @@ mod handlers;
 mod prelude;
 pub mod telemetry;
 mod utils;
+// mod views;
 
 use anyhow::Result;
 use axum::{body::Body, http::Request, routing, Router};
@@ -31,13 +32,13 @@ fn app() -> Router {
 
     Router::new()
         .layer(CompressionLayer::new())
-        .layer(
-            CorsLayer::new()
-                // allow `GET` and `POST` when accessing the resource
-                .allow_methods([Method::GET])
-                // allow requests from any origin
-                .allow_origin(Any),
-        )
+        // .layer(
+        //     CorsLayer::new()
+        //         // allow `GET` and `POST` when accessing the resource
+        //         .allow_methods([Method::GET])
+        //         // allow requests from any origin
+        //         .allow_origin(Any),
+        // )
         .layer(
             // Let's create a tracing span for each request
             TraceLayer::new_for_http().make_span_with(|request: &Request<Body>| {
@@ -65,13 +66,17 @@ fn app() -> Router {
         )
 }
 
-pub async fn run(listener: TcpListener) -> Result<()> {
-    let addr = listener.local_addr()?;
+pub async fn run(std_listener: TcpListener) -> Result<()> {
+    let addr = std_listener.local_addr()?;
+
+    std_listener.set_nonblocking(true)?;
+    let listener = tokio::net::TcpListener::from_std(std_listener)?;
 
     tracing::info!("Listening on {}", addr);
 
-    axum::Server::from_tcp(listener)?
-        .serve(app().into_make_service())
+    axum::serve(listener, app())
+        // axum::Server::from_tcp(listener)?
+        //     .serve(app().into_make_service())
         .with_graceful_shutdown(async {
             tokio::signal::ctrl_c()
                 .await

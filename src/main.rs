@@ -1,5 +1,6 @@
-use anyhow::Result;
 use std::net::TcpListener;
+
+use anyhow::Result;
 use PKG_NAME::telemetry;
 
 #[tokio::main]
