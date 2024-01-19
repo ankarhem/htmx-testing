@@ -1,7 +1,7 @@
 use leptos::*;
 
 #[component]
-pub fn App() -> Element {
+pub fn App() -> impl IntoView {
     view! {
         <html>
             <head></head>

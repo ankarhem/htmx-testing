@@ -5,12 +5,13 @@ mod handlers;
 mod prelude;
 pub mod telemetry;
 mod utils;
-// mod views;
+mod views;
 
 use anyhow::Result;
+use axum::http::Method;
 use axum::{body::Body, http::Request, routing, Router};
 use once_cell::sync::Lazy;
-use reqwest::{Client, Method};
+use reqwest::Client;
 
 use tower_http::compression::CompressionLayer;
 use tower_http::cors::{Any, CorsLayer};
@@ -32,13 +33,13 @@ fn app() -> Router {
 
     Router::new()
         .layer(CompressionLayer::new())
-        // .layer(
-        //     CorsLayer::new()
-        //         // allow `GET` and `POST` when accessing the resource
-        //         .allow_methods([Method::GET])
-        //         // allow requests from any origin
-        //         .allow_origin(Any),
-        // )
+        .layer(
+            CorsLayer::new()
+                // allow `GET` and `POST` when accessing the resource
+                .allow_methods([Method::GET])
+                // allow requests from any origin
+                .allow_origin(Any),
+        )
         .layer(
             // Let's create a tracing span for each request
             TraceLayer::new_for_http().make_span_with(|request: &Request<Body>| {
@@ -64,6 +65,7 @@ fn app() -> Router {
             "/__healthcheck",
             routing::get(handlers::healthcheck::handler),
         )
+        .route("/", routing::get(handlers::index))
 }
 
 pub async fn run(std_listener: TcpListener) -> Result<()> {
