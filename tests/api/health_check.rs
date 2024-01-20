@@ -1,6 +1,6 @@
 use reqwest::StatusCode;
 
-use PKG_NAME::*;
+use htmx_testing::*;
 
 #[tokio::test]
 async fn healthcheck_works() {

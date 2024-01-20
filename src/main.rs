@@ -1,17 +1,18 @@
 use std::net::TcpListener;
 
 use anyhow::Result;
-use PKG_NAME::telemetry;
+use htmx_testing::telemetry;
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let subscriber = telemetry::get_subscriber("PKG_NAME".into(), "info".into(), std::io::stdout);
+    let subscriber =
+        telemetry::get_subscriber("htmx_testing".into(), "info".into(), std::io::stdout);
     telemetry::init_subscriber(subscriber);
 
     let port = std::env::var("PORT").unwrap_or("3000".to_string());
 
     let listener = TcpListener::bind(format!("0.0.0.0:{port}"))?;
-    PKG_NAME::run(listener).await?;
+    htmx_testing::run(listener).await?;
 
     Ok(())
 }
