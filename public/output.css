@@ -548,11 +548,6 @@ video {
   position: static;
 }
 
-.text-2xl {
-  font-size: 1.5rem;
-  line-height: 2rem;
-}
-
 /* Cross-browser fill height */
 
 :where(:root) {

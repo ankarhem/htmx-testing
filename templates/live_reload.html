@@ -1,0 +1,25 @@
+<script type="module">
+  var unloaded = false;
+
+  addEventListener('beforeunload', (event) => {
+    {
+      unloaded = true;
+    }
+  });
+
+  const retry = (url) =>
+    fetch(url, { cache: 'no-store' })
+      .then(() => console.log('[livereload] reload...'))
+      .then(() => window.location.reload())
+      .catch(() => setTimeout(() => retry(url), { reload_interval }));
+
+  const main = () =>
+    fetch('{long_poll}', { cache: 'no-store' })
+      .then((rsp) => rsp.text())
+      .catch(() => null)
+      .then(() => console.log('[livereload] disconnected...'))
+      .then(() => (unloaded ? null : retry('{back_up}')));
+
+  console.log('[livereload] connected...');
+  main();
+</script>

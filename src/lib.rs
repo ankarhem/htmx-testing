@@ -5,12 +5,10 @@ mod handlers;
 mod prelude;
 pub mod telemetry;
 mod utils;
-mod views;
 
 use anyhow::Result;
 use axum::http::Method;
-use axum::{body::Body, http::Request, routing, Router};
-use leptos::leptos_config::ConfFile;
+use axum::{body::Body, http::Request, Router};
 use once_cell::sync::Lazy;
 use reqwest::Client;
 
@@ -19,9 +17,6 @@ use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tower_request_id::{RequestId, RequestIdLayer};
 use tracing::info_span;
-
-use leptos::*;
-use leptos_axum::*;
 
 #[derive(Clone)]
 pub struct AppState {
@@ -35,25 +30,16 @@ fn app() -> Router {
         client: reqwest_client,
     };
 
-    let conf_future = get_configuration(Some("Cargo.toml"));
-    let conf: ConfFile = futures::executor::block_on(conf_future).unwrap();
-    let leptos_options = conf.leptos_options;
-    // let addr = leptos_options.site_addr;
-    let routes = generate_route_list(crate::views::App);
-
     let public_service = tower_http::services::ServeDir::new("public");
 
-    let app = axum::Router::new()
-        // .route("/", routing::get(handlers::index))
-        .leptos_routes(&leptos_options, routes, crate::views::App)
-        .fallback_service(public_service);
-
-    let app = app
+    axum::Router::new()
+        .merge(handlers::frontend_routes())
+        .fallback_service(public_service)
         .layer(CompressionLayer::new())
         .layer(
             CorsLayer::new()
                 // allow `GET` and `POST` when accessing the resource
-                .allow_methods([Method::GET])
+                .allow_methods([Method::GET, Method::POST])
                 // allow requests from any origin
                 .allow_origin(Any),
         )
@@ -76,28 +62,20 @@ fn app() -> Router {
             }),
         )
         .layer(RequestIdLayer)
-        // .leptos_routes(&leptos_options, routes, crate::views::App)
-        .with_state(leptos_options);
-
-    // Omit these from the logs etc.
-    app.route(
-        "/__healthcheck",
-        routing::get(handlers::healthcheck::handler),
-    )
-    .with_state(app_state)
+        .with_state(app_state)
 }
 
 pub async fn run(std_listener: TcpListener) -> Result<()> {
     let addr = std_listener.local_addr()?;
 
-    // std_listener.set_nonblocking(true)?;
-    // let listener = tokio::net::TcpListener::from_std(std_listener)?;
+    std_listener.set_nonblocking(true)?;
+    let listener = tokio::net::TcpListener::from_std(std_listener)?;
 
     tracing::info!("Listening on {}", addr);
 
-    // axum::serve(listener, app())
-    axum::Server::from_tcp(std_listener)?
-        .serve(app().into_make_service())
+    axum::serve(listener, app())
+        // axum::Server::from_tcp(std_listener)?
+        // .serve(app().into_make_service())
         .with_graceful_shutdown(async {
             tokio::signal::ctrl_c()
                 .await

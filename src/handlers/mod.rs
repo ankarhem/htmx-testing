@@ -1,11 +1,12 @@
-use crate::views::App;
-use axum::response::{Html, IntoResponse};
-use leptos::{ssr::render_to_string, *};
+use axum::{routing::*, Router};
 
-pub mod healthcheck;
+use crate::AppState;
 
-pub async fn index() -> impl IntoResponse {
-    let html = render_to_string(|| view! { <App/> });
+mod healthcheck;
+mod hello;
 
-    Html(html.to_string())
+pub fn frontend_routes() -> impl Into<Router<AppState>> {
+    axum::Router::new()
+        .route("/__healthcheck", get(healthcheck::handler))
+        .route("/hello", get(hello::handler))
 }

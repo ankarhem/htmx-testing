@@ -1,0 +1,11 @@
+{
+  "name": "htmx-testing",
+  "type": "module",
+  "devDependencies": {
+    "bun-types": "latest",
+    "@tailwindcss/typography": "^0.5.10"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
