@@ -1,5 +1,5 @@
 run:
-    cargo watch -q -c -w src/ -x run | bunyan
+    cargo watch -q -c -w src/ -w templates/ -x run | bunyan
 
 test:
     cargo watch -x test | bunyan

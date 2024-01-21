@@ -4,9 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ title }}</title>
-    {{ head }}
+    <link rel="stylesheet" href="/output.css" />
+    <script src="/htmx.min.js"></script>
+    {% include "live_reload.html" %}
+    <!--  -->
+    {% block head %}{% endblock head %}
   </head>
   <body>
-    {{ body }}
+    {% block nav %}
+    <nav class="max-w-[65ch] mx-auto py-4" hx-boost="true">
+      <ul class="flex gap-2">
+        {% for link in crate::templates::utils::LINKS %}
+        <li>
+          <a href="{{link.href}}">{{link.text}}</a>
+        </li>
+        {% endfor %}
+      </ul>
+    </nav>
+    {% endblock nav %}
+    <!--  -->
+    {% block content %}{% endblock content %}
   </body>
 </html>

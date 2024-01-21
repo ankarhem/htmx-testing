@@ -4,6 +4,7 @@ use std::time::Duration;
 mod handlers;
 mod prelude;
 pub mod telemetry;
+mod templates;
 mod utils;
 
 use anyhow::Result;
@@ -33,7 +34,8 @@ fn app() -> Router {
     let public_service = tower_http::services::ServeDir::new("public");
 
     axum::Router::new()
-        .merge(handlers::frontend_routes())
+        .merge(handlers::routes())
+        .merge(templates::frontend_routes())
         .fallback_service(public_service)
         .layer(CompressionLayer::new())
         .layer(
