@@ -38,5 +38,5 @@ tracing-subscriber = { version = "0.3.17", features = [
   "env-filter",
 ] }
 
-[package.metadata.leptos]
-output-name = "htmx_testing"
+[profile.dev.package.askama_derive]
+opt-level = 3
